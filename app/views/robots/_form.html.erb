@@ -1,0 +1,48 @@
+<%= form_for @robot do |f| %>
+  <% if @robot.errors.any? %>
+    <ul>
+    <% @robot.errors.full_messages.each do |msg| %>
+      <li><b style="color:orange"><%= msg %></b></li>
+  <% end %>
+  </ul>
+  <% end %>
+  <table>
+    <tr>
+      <td colspan="2">
+        <div class="field">
+          <%= f.label :size_grid %>
+          <%= f.text_field :size_grid, placeholder: 'Size Grid', style: "width:50px" %>
+          <i>Type size of the Grid default: 5x5</i>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <div class="field">
+          <%= f.label :commands %><br/>
+          <%= f.text_area :commands, placeholder: 'Commands', style: "width:350px;height:150px" %>
+          <p style="width:400px"><i>Type commands available: [ PLACE X,Y,( NORTH | WEST | SOUTH | EAST ) | MOVE | LEFT | RIGHT | REPORT ] - whitespace delimited</i></p>
+          <b><%= "Output: #{@robot.report}" if @robot.report %></b>
+        </div>
+      </td>
+      <td>
+        <p>
+          <b>Shortcut for navigations:</b><br/>
+          <b>Ctrl+Shift+N : MOVE NORTH</b><br/>
+          <b>Ctrl+Shift+W : MOVE WEST</b><br/>
+          <b>Ctrl+Shift+S : MOVE SOUTH</b><br/>
+          <b>Ctrl+Shift+E : MOVE EAST</b><br/>
+        </p>
+        <%= f.hidden_field :max_x %>
+        <%= f.hidden_field :max_y %>
+        <%= f.hidden_field :x %>
+        <%= f.hidden_field :y %>
+        <%= f.hidden_field :f %>
+      </td>
+    </tr>
+  </table>
+
+  <div class="field">
+    <%= f.submit 'Post Commands' %>
+  </div>
+<% end %>
