@@ -1,37 +1,30 @@
 class RobotsController < ApplicationController
-	attr_accessor :size_grid, :max_x, :max_y, :x, :y, :f, :commands, :report
-
-	def initialize(params={})
-	  	byebug
-	    @x = params[:x].try(:to_i)
-	    @y = params[:y].try(:to_i)
-	    @f = params[:f] || ""
-	    @size_grid = sanitize_size(params[:size_grid])
-	    @max_x, @max_y = @size_grid.split('x').map(&:to_i)
-	    @commands = params[:commands] || ""
-	    @report = nil
-  	end
+	
 
 	def new
     	@robot = Robot.new
   	end
 
   def create
-    @robot = Robot.new(params[:robot_params])
-    execute_commands
+    @robot = Robot.new(robot_params)
+    
     if @robot.save
+      execute_commands
+      session[:user_id] = @report
     	redirect_to @robot
     else 
     	render new
     end
   end
 
+  attr_accessor :size_grid, :max_x, :max_y, :x, :y, :f, :commands, :report
+
 
   def execute_commands
-    # return unless check_if_robot_is_placed?
+    return unless check_if_robot_is_placed?
 
-    commands = @commands.gsub(/\r\n/,' ')
-    commands = commands.to_s.upcase.split(' ')
+    commands = @robot.commands.gsub(/\r\n/,' ')
+    commands = @robot.commands.to_s.upcase.split(' ')
     commands.each_with_index do |command, index|
       placing_initial_coordinates(commands[index+1]) if command == "PLACE"
       case command
@@ -44,9 +37,9 @@ class RobotsController < ApplicationController
       when 'REPORT'
         generate_report
         break
-      end if self.isExists?
+      end 
     end
-    warning_message
+    # warning_message
   end
 
   def isExists?
@@ -55,19 +48,21 @@ class RobotsController < ApplicationController
 
   private
 
-    # def check_if_robot_is_placed?
-    #   if !self.isExists? && !@commands.include?("PLACE")
-    #     @x, @y = ""
-    #     flash[:notice] = "You might need to place the robot first"
-    #     return false
-    #   end
-    #   return true
-    # end
+    def check_if_robot_is_placed?
+      if !@robot.commands.include?("PLACE")
+        @x, @y = ""
+        flash[:notice] = "You might need to place the robot first"
+        return false
+      end
+      return true
+    end
 
     def placing_initial_coordinates(args)
       @x, @y, @f = args.split(',')
       @x = @x.to_i
       @y = @y.to_i
+      @max_x = @robot.size_grid.split('x').map(&:to_i)[0]
+      @max_y = @robot.size_grid.split('x').map(&:to_i)[0]
     end
 
     def move_into_new_position
@@ -79,7 +74,7 @@ class RobotsController < ApplicationController
       when 'SOUTH'
         @y = @y-1 unless (@y-1) < 0
       when 'EAST'
-        @x = @x+1 unless (@x+1) > (@max_x -1)
+        @x = @x+1 unless (@x+1) > (@max_x - 1)
       end
     end
 
@@ -137,6 +132,6 @@ class RobotsController < ApplicationController
     # Use callbacks to share common setup or constraints between actions.
 
     def robot_params
-      params.require(:robot).permit(:size_grid, :commands, :x, :y ,:f, :max_x, :max_y)
+      params.require(:robot).permit(:size_grid, :commands)
     end
 end

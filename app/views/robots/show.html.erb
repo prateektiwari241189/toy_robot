@@ -1,2 +1,12 @@
-<% byebug %>
-<%= Robot.last %>
+
+<span> Input: </span>
+<%= @commands = Robot.last.commands %>
+
+<% if !@commands.include?("PLACE") %>
+	<% @x, @y = "" %>
+    <%= flash[:notice] = "You might need to place the robot first" %>
+<% end %>
+<br/>
+<span>Output:</span>
+<span><%= session[:user_id] %></span>
+	
